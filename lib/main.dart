@@ -1,4 +1,18 @@
+import 'dart:ffi';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_rust_example/bridge_generated.dart';
+
+const base = "rust";
+final path = Platform.isWindows ? "$base.dll" : "lib$base.so";
+late final dylib = Platform.isIOS
+    ? DynamicLibrary.process()
+    : Platform.isMacOS
+        ? DynamicLibrary.executable()
+        : DynamicLibrary.open(path);
+
+late final api = RustImpl(dylib);
 
 void main() {
   runApp(const MyApp());
@@ -28,11 +42,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  late Future<int> counter;
+
+  @override
+  void initState() {
+    super.initState();
+    counter = api.getCounter();
+  }
 
   void _incrementCounter() {
     setState(() {
-      _counter++;
+      counter = api.decrement();
     });
   }
 
@@ -49,10 +69,18 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+            FutureBuilder<List<dynamic>>(
+                future: Future.wait([counter]),
+                builder: (context, snap) {
+                  final data = snap.data;
+                  if (data == null) {
+                    return const Text("Loading");
+                  }
+                  return Text(
+                    '${data[0]}',
+                    style: Theme.of(context).textTheme.headline4,
+                  );
+                }),
           ],
         ),
       ),
