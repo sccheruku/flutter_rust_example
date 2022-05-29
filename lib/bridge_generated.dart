@@ -17,6 +17,12 @@ abstract class Rust {
   Future<int> increment({dynamic hint});
 
   Future<int> decrement({dynamic hint});
+
+  Stream<int> tick({dynamic hint});
+
+  Stream<int> startStream({dynamic hint});
+
+  Future<void> stopStream({dynamic hint});
 }
 
 class RustImpl extends FlutterRustBridgeBase<RustWire> implements Rust {
@@ -57,6 +63,41 @@ class RustImpl extends FlutterRustBridgeBase<RustWire> implements Rust {
         hint: hint,
       ));
 
+  Stream<int> tick({dynamic hint}) => executeStream(FlutterRustBridgeTask(
+        callFfi: (port_) => inner.wire_tick(port_),
+        parseSuccessData: _wire2api_i32,
+        constMeta: const FlutterRustBridgeTaskConstMeta(
+          debugName: "tick",
+          argNames: [],
+        ),
+        argValues: [],
+        hint: hint,
+      ));
+
+  Stream<int> startStream({dynamic hint}) =>
+      executeStream(FlutterRustBridgeTask(
+        callFfi: (port_) => inner.wire_start_stream(port_),
+        parseSuccessData: _wire2api_i32,
+        constMeta: const FlutterRustBridgeTaskConstMeta(
+          debugName: "start_stream",
+          argNames: [],
+        ),
+        argValues: [],
+        hint: hint,
+      ));
+
+  Future<void> stopStream({dynamic hint}) =>
+      executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => inner.wire_stop_stream(port_),
+        parseSuccessData: _wire2api_unit,
+        constMeta: const FlutterRustBridgeTaskConstMeta(
+          debugName: "stop_stream",
+          argNames: [],
+        ),
+        argValues: [],
+        hint: hint,
+      ));
+
   // Section: api2wire
 
   // Section: api_fill_to_wire
@@ -64,8 +105,16 @@ class RustImpl extends FlutterRustBridgeBase<RustWire> implements Rust {
 }
 
 // Section: wire2api
+int _wire2api_i32(dynamic raw) {
+  return raw as int;
+}
+
 int _wire2api_u64(dynamic raw) {
   return raw as int;
+}
+
+void _wire2api_unit(dynamic raw) {
+  return;
 }
 
 // ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
@@ -130,6 +179,46 @@ class RustWire implements FlutterRustBridgeWireBase {
           'wire_decrement');
   late final _wire_decrement =
       _wire_decrementPtr.asFunction<void Function(int)>();
+
+  void wire_tick(
+    int port_,
+  ) {
+    return _wire_tick(
+      port_,
+    );
+  }
+
+  late final _wire_tickPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_tick');
+  late final _wire_tick = _wire_tickPtr.asFunction<void Function(int)>();
+
+  void wire_start_stream(
+    int port_,
+  ) {
+    return _wire_start_stream(
+      port_,
+    );
+  }
+
+  late final _wire_start_streamPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_start_stream');
+  late final _wire_start_stream =
+      _wire_start_streamPtr.asFunction<void Function(int)>();
+
+  void wire_stop_stream(
+    int port_,
+  ) {
+    return _wire_stop_stream(
+      port_,
+    );
+  }
+
+  late final _wire_stop_streamPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_stop_stream');
+  late final _wire_stop_stream =
+      _wire_stop_streamPtr.asFunction<void Function(int)>();
 
   void free_WireSyncReturnStruct(
     WireSyncReturnStruct val,

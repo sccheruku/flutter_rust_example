@@ -43,16 +43,31 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late Future<int> counter;
+  late Stream<int> ticks;
+  late Stream<int> controlledTicks = Stream.empty();
 
   @override
   void initState() {
     super.initState();
     counter = api.getCounter();
+    ticks = api.tick();
   }
 
   void _incrementCounter() {
     setState(() {
-      counter = api.decrement();
+      counter = api.increment();
+    });
+  }
+
+  void _startStream() {
+    setState(() {
+      controlledTicks = api.startStream();
+    });
+  }
+
+  void _stopStream() {
+    setState(() {
+      api.stopStream();
     });
   }
 
@@ -78,6 +93,32 @@ class _MyHomePageState extends State<MyHomePage> {
                   }
                   return Text(
                     '${data[0]}',
+                    style: Theme.of(context).textTheme.headline4,
+                  );
+                }),
+            StreamBuilder<int>(
+                stream: ticks,
+                builder: (context, snap) {
+                  final data = snap.data;
+                  if (data == null) {
+                    return const Text("Loading");
+                  }
+                  return Text(
+                    'tick: $data',
+                    style: Theme.of(context).textTheme.headline4,
+                  );
+                }),
+            TextButton(onPressed: _startStream, child: Text("Start Stream")),
+            TextButton(onPressed: _stopStream, child: Text("Stop Stream")),
+            StreamBuilder<int>(
+                stream: controlledTicks,
+                builder: (context, snap) {
+                  final data = snap.data;
+                  if (data == null) {
+                    return const Text("Loading");
+                  }
+                  return Text(
+                    'tick: $data',
                     style: Theme.of(context).textTheme.headline4,
                   );
                 }),

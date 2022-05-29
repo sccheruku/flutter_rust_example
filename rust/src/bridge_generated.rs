@@ -53,6 +53,42 @@ pub extern "C" fn wire_decrement(port_: i64) {
     )
 }
 
+#[no_mangle]
+pub extern "C" fn wire_tick(port_: i64) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "tick",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || move |task_callback| tick(task_callback.stream_sink()),
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn wire_start_stream(port_: i64) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "start_stream",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || move |task_callback| start_stream(task_callback.stream_sink()),
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn wire_stop_stream(port_: i64) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "stop_stream",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(stop_stream()),
+    )
+}
+
 // Section: wire structs
 
 // Section: wrapper structs
