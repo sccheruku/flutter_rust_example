@@ -12,6 +12,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'dart:ffi' as ffi;
 
 abstract class Rust {
+  Future<ActionResponse> call({required ActionRequest request, dynamic hint});
+
   Future<int> getCounter({dynamic hint});
 
   Future<int> increment({dynamic hint});
@@ -25,10 +27,43 @@ abstract class Rust {
   Future<void> stopStream({dynamic hint});
 }
 
+class ActionRequest {
+  final String action;
+  final String payload;
+
+  ActionRequest({
+    required this.action,
+    required this.payload,
+  });
+}
+
+class ActionResponse {
+  final String response;
+  final bool success;
+
+  ActionResponse({
+    required this.response,
+    required this.success,
+  });
+}
+
 class RustImpl extends FlutterRustBridgeBase<RustWire> implements Rust {
   factory RustImpl(ffi.DynamicLibrary dylib) => RustImpl.raw(RustWire(dylib));
 
   RustImpl.raw(RustWire inner) : super(inner);
+
+  Future<ActionResponse> call({required ActionRequest request, dynamic hint}) =>
+      executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => inner.wire_call(
+            port_, _api2wire_box_autoadd_action_request(request)),
+        parseSuccessData: _wire2api_action_response,
+        constMeta: const FlutterRustBridgeTaskConstMeta(
+          debugName: "call",
+          argNames: ["request"],
+        ),
+        argValues: [request],
+        hint: hint,
+      ));
 
   Future<int> getCounter({dynamic hint}) => executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => inner.wire_get_counter(port_),
@@ -99,18 +134,74 @@ class RustImpl extends FlutterRustBridgeBase<RustWire> implements Rust {
       ));
 
   // Section: api2wire
+  ffi.Pointer<wire_uint_8_list> _api2wire_String(String raw) {
+    return _api2wire_uint_8_list(utf8.encoder.convert(raw));
+  }
+
+  ffi.Pointer<wire_ActionRequest> _api2wire_box_autoadd_action_request(
+      ActionRequest raw) {
+    final ptr = inner.new_box_autoadd_action_request();
+    _api_fill_to_wire_action_request(raw, ptr.ref);
+    return ptr;
+  }
+
+  int _api2wire_u8(int raw) {
+    return raw;
+  }
+
+  ffi.Pointer<wire_uint_8_list> _api2wire_uint_8_list(Uint8List raw) {
+    final ans = inner.new_uint_8_list(raw.length);
+    ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
+    return ans;
+  }
 
   // Section: api_fill_to_wire
 
+  void _api_fill_to_wire_action_request(
+      ActionRequest apiObj, wire_ActionRequest wireObj) {
+    wireObj.action = _api2wire_String(apiObj.action);
+    wireObj.payload = _api2wire_String(apiObj.payload);
+  }
+
+  void _api_fill_to_wire_box_autoadd_action_request(
+      ActionRequest apiObj, ffi.Pointer<wire_ActionRequest> wireObj) {
+    _api_fill_to_wire_action_request(apiObj, wireObj.ref);
+  }
 }
 
 // Section: wire2api
+String _wire2api_String(dynamic raw) {
+  return raw as String;
+}
+
+ActionResponse _wire2api_action_response(dynamic raw) {
+  final arr = raw as List<dynamic>;
+  if (arr.length != 2)
+    throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+  return ActionResponse(
+    response: _wire2api_String(arr[0]),
+    success: _wire2api_bool(arr[1]),
+  );
+}
+
+bool _wire2api_bool(dynamic raw) {
+  return raw as bool;
+}
+
 int _wire2api_i32(dynamic raw) {
   return raw as int;
 }
 
 int _wire2api_u64(dynamic raw) {
   return raw as int;
+}
+
+int _wire2api_u8(dynamic raw) {
+  return raw as int;
+}
+
+Uint8List _wire2api_uint_8_list(dynamic raw) {
+  return raw as Uint8List;
 }
 
 void _wire2api_unit(dynamic raw) {
@@ -137,6 +228,23 @@ class RustWire implements FlutterRustBridgeWireBase {
       ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
           lookup)
       : _lookup = lookup;
+
+  void wire_call(
+    int port_,
+    ffi.Pointer<wire_ActionRequest> request,
+  ) {
+    return _wire_call(
+      port_,
+      request,
+    );
+  }
+
+  late final _wire_callPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_ActionRequest>)>>('wire_call');
+  late final _wire_call = _wire_callPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_ActionRequest>)>();
 
   void wire_get_counter(
     int port_,
@@ -220,6 +328,32 @@ class RustWire implements FlutterRustBridgeWireBase {
   late final _wire_stop_stream =
       _wire_stop_streamPtr.asFunction<void Function(int)>();
 
+  ffi.Pointer<wire_ActionRequest> new_box_autoadd_action_request() {
+    return _new_box_autoadd_action_request();
+  }
+
+  late final _new_box_autoadd_action_requestPtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<wire_ActionRequest> Function()>>(
+          'new_box_autoadd_action_request');
+  late final _new_box_autoadd_action_request =
+      _new_box_autoadd_action_requestPtr
+          .asFunction<ffi.Pointer<wire_ActionRequest> Function()>();
+
+  ffi.Pointer<wire_uint_8_list> new_uint_8_list(
+    int len,
+  ) {
+    return _new_uint_8_list(
+      len,
+    );
+  }
+
+  late final _new_uint_8_listPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<wire_uint_8_list> Function(
+              ffi.Int32)>>('new_uint_8_list');
+  late final _new_uint_8_list = _new_uint_8_listPtr
+      .asFunction<ffi.Pointer<wire_uint_8_list> Function(int)>();
+
   void free_WireSyncReturnStruct(
     WireSyncReturnStruct val,
   ) {
@@ -247,6 +381,19 @@ class RustWire implements FlutterRustBridgeWireBase {
           'store_dart_post_cobject');
   late final _store_dart_post_cobject = _store_dart_post_cobjectPtr
       .asFunction<void Function(DartPostCObjectFnType)>();
+}
+
+class wire_uint_8_list extends ffi.Struct {
+  external ffi.Pointer<ffi.Uint8> ptr;
+
+  @ffi.Int32()
+  external int len;
+}
+
+class wire_ActionRequest extends ffi.Struct {
+  external ffi.Pointer<wire_uint_8_list> action;
+
+  external ffi.Pointer<wire_uint_8_list> payload;
 }
 
 typedef DartPostCObjectFnType = ffi.Pointer<

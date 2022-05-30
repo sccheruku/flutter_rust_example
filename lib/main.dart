@@ -51,6 +51,10 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     counter = api.getCounter();
     ticks = api.tick();
+    api
+        .call(request: ActionRequest(action: "Action", payload: ""))
+        .then((r) => debugPrint("ActionResponse: ${r.success}"))
+        .catchError((error) => debugPrint("ActionResponse.error: $error"));
   }
 
   void _incrementCounter() {
