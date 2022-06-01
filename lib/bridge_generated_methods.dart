@@ -144,7 +144,7 @@ class MethodsApiWire implements FlutterRustBridgeWireBase {
 
   late final _free_WireSyncReturnStructPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(WireSyncReturnStruct)>>(
-          'free_WireSyncReturnStructMethods');
+          'free_WireSyncReturnStruct');
   late final _free_WireSyncReturnStruct = _free_WireSyncReturnStructPtr
       .asFunction<void Function(WireSyncReturnStruct)>();
 
