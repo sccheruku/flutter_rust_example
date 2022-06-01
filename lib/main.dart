@@ -2,7 +2,8 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_rust_example/bridge_generated.dart';
+import 'package:flutter_rust_example/bridge_generated_api.dart';
+import 'package:flutter_rust_example/bridge_generated_methods.dart';
 
 const base = "rust";
 final path = Platform.isWindows ? "$base.dll" : "lib$base.so";
@@ -12,7 +13,8 @@ late final dylib = Platform.isIOS
         ? DynamicLibrary.executable()
         : DynamicLibrary.open(path);
 
-late final api = RustImpl(dylib);
+late final api = CoreApiImpl(dylib);
+late final methodsApi = MethodsApiImpl(dylib);
 
 void main() {
   runApp(const MyApp());
@@ -49,17 +51,21 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    counter = api.getCounter();
+    counter = methodsApi.getCounter();
     ticks = api.tick();
     api
-        .call(request: ActionRequest(action: "Action", payload: ""))
-        .then((r) => debugPrint("ActionResponse: ${r.success}"))
+        .call(request: ActionRequest(action: "echo", payload: "hello there"))
+        .then((r) => debugPrint("ActionResponse: ${r.success} ${r.response}"))
         .catchError((error) => debugPrint("ActionResponse.error: $error"));
+    methodsApi
+        .getCounter()
+        .then((r) => debugPrint("GetCounter: $r"))
+        .catchError((error) => debugPrint("GetCounter.error $error"));
   }
 
   void _incrementCounter() {
     setState(() {
-      counter = api.increment();
+      counter = methodsApi.increment();
     });
   }
 

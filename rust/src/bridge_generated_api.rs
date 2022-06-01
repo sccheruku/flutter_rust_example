@@ -36,42 +36,6 @@ pub extern "C" fn wire_call(port_: i64, request: *mut wire_ActionRequest) {
 }
 
 #[no_mangle]
-pub extern "C" fn wire_get_counter(port_: i64) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
-        WrapInfo {
-            debug_name: "get_counter",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || move |task_callback| Ok(get_counter()),
-    )
-}
-
-#[no_mangle]
-pub extern "C" fn wire_increment(port_: i64) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
-        WrapInfo {
-            debug_name: "increment",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || move |task_callback| Ok(increment()),
-    )
-}
-
-#[no_mangle]
-pub extern "C" fn wire_decrement(port_: i64) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
-        WrapInfo {
-            debug_name: "decrement",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || move |task_callback| Ok(decrement()),
-    )
-}
-
-#[no_mangle]
 pub extern "C" fn wire_tick(port_: i64) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
